@@ -69,6 +69,8 @@ const MESSAGE_DOMAIN = (workOrderIds: number[]): any[] => [
       'failed_tenant_sms',
       'failed_tenant_mail',
       'failed_tenant_mail_and_sms',
+      'tenant_mail_ok_and_sms_failed',
+      'tenant_mail_failed_and_sms_ok',
     ],
   ],
 ]
