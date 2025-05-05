@@ -23,6 +23,7 @@ export const WorkOrderSchema = z.object({
   RentalObjectCode: z.string(),
   Status: z.string(),
   UseMasterKey: z.boolean(),
+  HiddenFromMyPages: z.boolean().optional(),
   WorkOrderRows: z.array(
     z.object({
       Description: z.string().nullable(),
@@ -44,6 +45,7 @@ export const OdooWorkOrderSchema = z.object({
   priority: z.string(),
   pet: z.string(),
   call_between: z.string(),
+  hidden_from_my_pages: z.boolean().optional(),
   space_code: z.string(),
   equipment_code: z.string(),
   rental_property_id: z.string(),
