@@ -97,7 +97,8 @@ export const LeaseSchema = z.object({
   leaseNumber: z.string(),
   type: z.string(),
   leaseStartDate: z.string(),
-  leaseEndDate: z.string().optional(),
+  // This is not nullable in onecore-types, but it is actually nullable
+  leaseEndDate: z.string().optional().nullable(),
   contractDate: z.string().optional(),
   approvalDate: z.string().optional(),
 })
@@ -113,7 +114,8 @@ export const TenantSchema = z.object({
       z.object({
         phoneNumber: z.string(),
         type: z.string(),
-        isMainNumber: z.boolean(),
+        // This is a boolean in onecore-types, but it is actually a number
+        isMainNumber: z.number(),
       })
     )
     .optional(),
@@ -124,8 +126,10 @@ export const CreateWorkOrderRowSchema = z.object({
   LocationCode: z.string(),
   PartOfBuildingCode: z.string(),
   Description: z.string(),
-  MaintenanceUnitCode: z.string().optional(),
-  MaintenanceUnitCaption: z.string().optional(),
+  // This is not nullable in onecore-types, but it is actually nullable
+  MaintenanceUnitCode: z.string().optional().nullable(),
+  // This is not nullable in onecore-types, but it is actually nullable
+  MaintenanceUnitCaption: z.string().optional().nullable(),
 })
 
 export const CreateWorkOrderDetailsSchema = z.object({
@@ -138,7 +142,8 @@ export const CreateWorkOrderDetailsSchema = z.object({
     CallBetween: z.string(),
   }),
   HearingImpaired: z.boolean(),
-  Pet: z.boolean(),
+  // This is a boolean in onecore-types, but it is actually a string
+  Pet: z.string(),
   Rows: z.array(CreateWorkOrderRowSchema),
   Images: z.array(
     z.object({

@@ -98,7 +98,7 @@ export const CreateWorkOrderDetailsFactory =
       CallBetween: '08:00 - 17:00',
     },
     HearingImpaired: false,
-    Pet: false,
+    Pet: 'Nej',
     Rows: [
       {
         LocationCode: 'TV',
