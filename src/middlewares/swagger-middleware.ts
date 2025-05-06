@@ -5,6 +5,25 @@ import zodToJsonSchema from 'zod-to-json-schema'
 
 type Schemas = Record<string, ReturnType<typeof zodToJsonSchema>>
 
+const schemaRegistry: Schemas = {}
+
+function addSchemaToRegistry(
+  registry: Schemas,
+  name: string,
+  schema: z.ZodType
+) {
+  if (schemaRegistry[name]) {
+    throw new Error(`Schema with name ${name} already exists`)
+  }
+  registry[name] = zodToJsonSchema(schema)
+
+  return registry
+}
+
+export function registerSchema(name: string, schema: z.ZodType) {
+  addSchemaToRegistry(schemaRegistry, name, schema)
+}
+
 export function swaggerMiddleware({
   routes,
   schemas,
@@ -30,11 +49,8 @@ export function swaggerMiddleware({
         },
         components: {
           schemas: Object.entries(schemas).reduce<Schemas>(
-            (acc, [name, schema]) => {
-              acc[name] = zodToJsonSchema(schema)
-              return acc
-            },
-            {}
+            (acc, [name, schema]) => addSchemaToRegistry(acc, name, schema),
+            schemaRegistry
           ),
         },
       },
