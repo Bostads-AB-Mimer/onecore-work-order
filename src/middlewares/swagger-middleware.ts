@@ -7,21 +7,8 @@ type Schemas = Record<string, ReturnType<typeof zodToJsonSchema>>
 
 const schemaRegistry: Schemas = {}
 
-function addSchemaToRegistry(
-  registry: Schemas,
-  name: string,
-  schema: z.ZodType
-) {
-  if (schemaRegistry[name]) {
-    throw new Error(`Schema with name ${name} already exists`)
-  }
-  registry[name] = zodToJsonSchema(schema)
-
-  return registry
-}
-
 export function registerSchema(name: string, schema: z.ZodType) {
-  addSchemaToRegistry(schemaRegistry, name, schema)
+  schemaRegistry[name] = zodToJsonSchema(schema)
 }
 
 export function swaggerMiddleware({
@@ -49,7 +36,10 @@ export function swaggerMiddleware({
         },
         components: {
           schemas: Object.entries(schemas).reduce<Schemas>(
-            (acc, [name, schema]) => addSchemaToRegistry(acc, name, schema),
+            (acc, [name, schema]) => {
+              acc[name] = zodToJsonSchema(schema)
+              return acc
+            },
             schemaRegistry
           ),
         },
