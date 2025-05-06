@@ -13,6 +13,10 @@ import { swaggerMiddleware } from './middlewares/swagger-middleware'
 import {
   WorkOrderSchema,
   CreateWorkOrderBodySchema,
+  LeaseSchema,
+  RentalPropertySchema,
+  TenantSchema,
+  CreateWorkOrderDetailsSchema,
 } from './services/work-order-service/schemas'
 
 app.use(cors())
@@ -44,6 +48,10 @@ app.use(
     schemas: {
       WorkOrder: WorkOrderSchema,
       CreateWorkOrderBody: CreateWorkOrderBodySchema,
+      Lease: LeaseSchema,
+      RentalProperty: RentalPropertySchema,
+      Tenant: TenantSchema,
+      CreateWorkOrderDetails: CreateWorkOrderDetailsSchema,
     },
   })
 )

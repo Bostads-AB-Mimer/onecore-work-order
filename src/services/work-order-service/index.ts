@@ -104,12 +104,6 @@ export const routes = (router: KoaRouter) => {
    *     description: Retrieves work orders based on the provided residence id.
    *     parameters:
    *       - in: path
-   *         name: any
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: Any path segment
-   *       - in: path
    *         name: residenceId
    *         required: true
    *         schema:
@@ -314,9 +308,12 @@ export const routes = (router: KoaRouter) => {
    *             schema:
    *               type: object
    *               properties:
-   *                 message:
-   *                   type: string
-   *                   example: Message added to work order with ID {workOrderId}
+   *                 content:
+   *                   type: object
+   *                   properties:
+   *                     message:
+   *                       type: string
+   *                       example: Message added to work order with ID {workOrderId}
    *                 metadata:
    *                   type: object
    *                   description: Route metadata
@@ -406,9 +403,12 @@ export const routes = (router: KoaRouter) => {
    *             schema:
    *               type: object
    *               properties:
-   *                 message:
-   *                   type: string
-   *                   example: Work order with ID {workOrderId} updated successfully
+   *                 content:
+   *                   type: object
+   *                   properties:
+   *                     message:
+   *                       type: string
+   *                       example: Work order with ID {workOrderId} updated successfully
    *                 metadata:
    *                   type: object
    *                   description: Route metadata
