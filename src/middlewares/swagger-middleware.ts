@@ -3,11 +3,13 @@ import { z } from 'zod'
 import swaggerJSDoc from 'swagger-jsdoc'
 import zodToJsonSchema from 'zod-to-json-schema'
 
-type Schemas = Record<string, ReturnType<typeof zodToJsonSchema>>
-
-const schemaRegistry: Schemas = {}
+const schemaRegistry: Record<string, ReturnType<typeof zodToJsonSchema>> = {}
 
 export function registerSchema(name: string, schema: z.ZodType) {
+  if (schemaRegistry[name]) {
+    throw new Error(`Schema with name ${name} already exists`)
+  }
+
   schemaRegistry[name] = zodToJsonSchema(schema)
 }
 
@@ -22,6 +24,10 @@ export function swaggerMiddleware({
   serviceName?: string
   version?: string
 }) {
+  Object.entries(schemas).forEach(([name, schema]) =>
+    registerSchema(name, schema)
+  )
+
   const router = new KoaRouter()
 
   router.get('/swagger.json', async (ctx) => {
@@ -35,13 +41,7 @@ export function swaggerMiddleware({
           version: version ?? '1.0.0',
         },
         components: {
-          schemas: Object.entries(schemas).reduce<Schemas>(
-            (acc, [name, schema]) => {
-              acc[name] = zodToJsonSchema(schema)
-              return acc
-            },
-            schemaRegistry
-          ),
+          schemas: schemaRegistry,
         },
       },
       apis: routes,
