@@ -69,7 +69,7 @@ export function transformXpandDbWorkOrder(
       })),
     } satisfies XpandWorkOrder
   } catch (error) {
-    throw new Error(`Failed to parse work order rows: ${error}`)
+    throw new Error(`Failed to transform work order from xpand: ${error}`)
   }
 }
 
