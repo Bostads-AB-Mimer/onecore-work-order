@@ -6,7 +6,6 @@ describe('xpand-adapter utils', () => {
     const xpandDbWorkOrderMock = factory.xpandDbWorkOrder.build()
 
     it('should transform an xpand work order correctly', () => {
-      console.log(xpandDbWorkOrderMock)
       const result = transformXpandDbWorkOrder(xpandDbWorkOrderMock)
 
       expect(result).toHaveProperty('AccessCaption')

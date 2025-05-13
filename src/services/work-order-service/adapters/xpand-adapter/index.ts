@@ -43,7 +43,7 @@ export async function getWorkOrdersByResidenceId(
       'cmrgr.caption AS resourceGroup',
       'aoupp.time AS createdAt',
       'aoupp.lastchged AS lastChanged',
-      'aopri.code as priority',
+      'aopri.code AS priority',
       'babuf.hyresid AS residenceId',
       db.raw(`
         JSON_QUERY(
