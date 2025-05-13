@@ -1,0 +1,91 @@
+import knex from 'knex'
+import { logger } from 'onecore-utilities'
+import Config from '../../../../common/config'
+import { AdapterResult } from '../../types'
+import { XpandWorkOrder, XpandWorkOrderSchema } from '../../schemas'
+import { transformXpandDbWorkOrder, trimStrings } from './utils'
+
+export type XpandDbWorkOrder = {
+  code: string
+  caption: string | null
+  contactCode: string | null
+  masterKey: string
+  status: number
+  resource: string
+  resourceGroup: string
+  createdAt: Date
+  lastChanged: Date
+  priority: string | null
+  residenceId: string
+  rows: string // Fetched as JSON string
+}
+
+const db = knex({ client: 'mssql', connection: Config.xpandDatabase })
+
+export async function getWorkOrdersByResidenceId(
+  residenceId: string,
+  {
+    skip = 0,
+    limit = 100,
+    sortAscending,
+  }: { skip?: number; limit?: number; sortAscending?: boolean } = {}
+): Promise<AdapterResult<XpandWorkOrder[], 'schema-error' | 'unknown'>> {
+  logger.info(`Getting work orders for residenceId: ${residenceId}`)
+
+  const workOrders = await db<XpandDbWorkOrder>('aoupp')
+    .select(
+      'aoupp.code',
+      'aoupp.caption AS caption',
+      'cmctc.cmctckod AS contactCode',
+      'aotlt.caption AS masterKey',
+      'aoupp.status AS status',
+      'resource.cmctcben AS resource',
+      'cmrgr.caption AS resourceGroup',
+      'aoupp.time AS createdAt',
+      'aoupp.lastchged AS lastChanged',
+      'aopri.code as priority',
+      'babuf.hyresid AS residenceId',
+      db.raw(`
+        JSON_QUERY(
+          (
+            SELECT
+              aoupr.caption AS caption,
+              aopla.caption AS locationCaption,
+              aopla.code AS locationCode,
+              aobdl.caption AS equipmentCaption,
+              aobdl.code AS equipmentCode
+            FROM aoupr
+            LEFT JOIN aopla ON aoupr.keyaopla = aopla.keyaopla
+            LEFT JOIN aobdl ON aoupr.keyaobdl = aobdl.keyaobdl
+            WHERE aoupr.keyaoupp = aoupp.keyaoupp
+            FOR JSON PATH
+          )
+        ) AS rows
+      `)
+    )
+    .innerJoin('babuf', 'babuf.keycmobj', 'aoupp.keycmobj')
+    .innerJoin('aotlt', 'aotlt.keyaotlt', 'aoupp.keyaotlt')
+    .leftJoin('cmctc', 'cmctc.keycmctc', 'aoupp.keycmctc')
+    .leftJoin('cmctc as resource', 'cmctc.keycmctc', 'aoupp.keycmctc2')
+    .leftJoin('cmrgr', 'cmrgr.keycmrgr', 'aoupp.keycmrgr')
+    .leftJoin('aopri', 'aopri.keyaopri', 'aoupp.keyaopri')
+    .where('babuf.hyresid', residenceId)
+    .orderBy('aoupp.time', sortAscending ? 'asc' : 'desc')
+    .offset(skip)
+    .limit(limit)
+    .then<XpandDbWorkOrder[]>(trimStrings)
+
+  const transformedWorkOrders = workOrders.map(transformXpandDbWorkOrder)
+
+  const parsed = XpandWorkOrderSchema.array().safeParse(transformedWorkOrders)
+  if (!parsed.success) {
+    logger.error(
+      { error: parsed.error.format() },
+      'Failed to parse work orders from Xpand DB'
+    )
+
+    return { ok: false, err: 'schema-error' }
+  }
+
+  return { ok: true, data: parsed.data }
+}

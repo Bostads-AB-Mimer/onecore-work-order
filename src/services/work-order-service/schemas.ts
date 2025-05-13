@@ -63,6 +63,16 @@ export const OdooWorkOrderMessageSchema = z.object({
   create_date: z.coerce.string(),
 })
 
+export const XpandWorkOrderSchema = WorkOrderSchema.omit({
+  DetailsCaption: true,
+  ExternalResource: true,
+  UseMasterKey: true,
+}).extend({
+  Caption: z.string().nullable(),
+  ContactCode: z.string().nullable(),
+  Priority: z.string().nullable(),
+})
+
 export const MaintenanceUnitSchema = z.object({
   id: z.string(),
   rentalPropertyId: z.string(),
@@ -163,10 +173,20 @@ export const CreateWorkOrderBodySchema = z.object({
   details: CreateWorkOrderDetailsSchema,
 })
 
+export const GetWorkOrdersFromXpandQuerySchema = z.object({
+  skip: z.coerce.number().optional(),
+  limit: z.coerce.number().optional(),
+  sortAscending: z
+    .string()
+    .transform((s) => (s === 'true' ? true : false))
+    .optional(),
+})
+
 export type WorkOrder = z.infer<typeof WorkOrderSchema>
 export type WorkOrderMessage = z.infer<typeof WorkOrderMessageSchema>
 export type OdooWorkOrder = z.infer<typeof OdooWorkOrderSchema>
 export type OdooWorkOrderMessage = z.infer<typeof OdooWorkOrderMessageSchema>
+export type XpandWorkOrder = z.infer<typeof XpandWorkOrderSchema>
 export type MaintenanceUnit = z.infer<typeof MaintenanceUnitSchema>
 export type RentalProperty = z.infer<typeof RentalPropertySchema>
 export type Lease = z.infer<typeof LeaseSchema>
