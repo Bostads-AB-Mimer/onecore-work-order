@@ -1,7 +1,14 @@
 import KoaRouter from '@koa/router'
 import { generateRouteMetadata } from 'onecore-utilities'
 import * as odooAdapter from './adapters/odoo-adapter'
-import { CreateWorkOrderBodySchema, WorkOrder } from './schemas'
+import {
+  CreateWorkOrderBodySchema,
+  GetWorkOrdersFromXpandQuerySchema,
+  WorkOrder,
+  XpandWorkOrderSchema,
+} from './schemas'
+import * as xpandAdapter from './adapters/xpand-adapter'
+import { registerSchema } from '../../middlewares/swagger-middleware'
 
 /**
  * @swagger
@@ -19,6 +26,8 @@ import { CreateWorkOrderBodySchema, WorkOrder } from './schemas'
  *   - bearerAuth: []
  */
 export const routes = (router: KoaRouter) => {
+  registerSchema('XpandWorkOrder', XpandWorkOrderSchema)
+
   /**
    * @swagger
    * /workOrders/contactCode/{contactCode}:
@@ -153,6 +162,125 @@ export const routes = (router: KoaRouter) => {
       ctx.body = {
         content: {
           workOrders: workOrders satisfies WorkOrder[],
+        },
+        ...metadata,
+      }
+    } catch (error: unknown) {
+      ctx.status = 500
+
+      if (error instanceof Error) {
+        ctx.body = {
+          error: error.message,
+          ...metadata,
+        }
+      }
+    }
+  })
+
+  /**
+   * @swagger
+   * /workOrders/xpand/residenceId/{residenceId}:
+   *   get:
+   *     summary: Get work orders by residence id from xpand
+   *     tags:
+   *       - Work Order Service
+   *     description: Retrieves work orders from xpand based on the provided residence id.
+   *     parameters:
+   *       - in: path
+   *         name: residenceId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The residence id to filter work orders.
+   *       - in: query
+   *         name: skip
+   *         required: false
+   *         schema:
+   *           type: number
+   *         description: The number of work orders to skip.
+   *       - in: query
+   *         name: limit
+   *         required: false
+   *         schema:
+   *           type: number
+   *         description: The number of work orders to fetch.
+   *       - in: query
+   *         name: sortAscending
+   *         required: false
+   *         schema:
+   *           type: boolean
+   *         description: Whether to sort the work orders by ascending creation date.
+   *     responses:
+   *       '200':
+   *         description: Successfully retrieved work orders.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 content:
+   *                   type: object
+   *                   properties:
+   *                     workOrders:
+   *                       type: array
+   *                       items:
+   *                         $ref: '#/components/schemas/XpandWorkOrder'
+   *                 metadata:
+   *                   type: object
+   *                   description: Route metadata
+   *       '500':
+   *         description: Internal server error. Failed to retrieve work orders.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 error:
+   *                   type: string
+   *                   example: Internal server error
+   *                 metadata:
+   *                   type: object
+   *                   description: Route metadata
+   *     security:
+   *       - bearerAuth: []
+   */
+  router.get('(.*)/workOrders/xpand/residenceId/:residenceId', async (ctx) => {
+    const metadata = generateRouteMetadata(ctx)
+    const parsedQuery = GetWorkOrdersFromXpandQuerySchema.safeParse(ctx.query)
+    if (!parsedQuery.success) {
+      ctx.status = 400
+      ctx.body = {
+        error: parsedQuery.error,
+        ...metadata,
+      }
+      return
+    }
+
+    const { skip, limit, sortAscending } = parsedQuery.data
+
+    try {
+      const xpandWorkOrders = await xpandAdapter.getWorkOrdersByResidenceId(
+        ctx.params.residenceId,
+        {
+          skip,
+          limit,
+          sortAscending,
+        }
+      )
+
+      if (!xpandWorkOrders.ok) {
+        ctx.status = 500
+        ctx.body = {
+          error: `Failed to fetch work orders from Xpand: ${xpandWorkOrders.err}`,
+          ...metadata,
+        }
+        return
+      }
+
+      ctx.status = 200
+      ctx.body = {
+        content: {
+          workOrders: xpandWorkOrders.data,
         },
         ...metadata,
       }
