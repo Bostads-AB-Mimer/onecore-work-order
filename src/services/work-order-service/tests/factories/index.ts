@@ -3,6 +3,8 @@ export { OdooWorkOrderMessageFactory as odooWorkOrderMessage } from './work-orde
 export { CreateWorkOrderDetailsFactory as CreateWorkOrderDetails } from './work-order'
 export { CreateWorkOrderFactory as CreateWorkOrder } from './work-order'
 export { WorkOrderFactory as workOrder } from './work-order'
+export { XpandWorkOrderFactory as xpandWorkOrder } from './xpand-work-order'
+export { XpandDbWorkOrderFactory as xpandDbWorkOrder } from './xpand-work-order'
 export { LeaseFactory as lease } from './lease'
 export { RentalPropertyFactory as rentalProperty } from './rental-property'
 export { TenantFactory as tenant } from './tenant'

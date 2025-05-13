@@ -4,7 +4,7 @@ import {
 } from '../../../adapters/odoo-adapter/utils'
 import * as factory from '../../factories'
 
-describe('utils', () => {
+describe('odoo-adapter utils', () => {
   describe('transformWorkOrder', () => {
     const odooWorkOrderMock = factory.odooWorkOrder.build()
 
