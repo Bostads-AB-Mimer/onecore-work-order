@@ -82,7 +82,7 @@ const MESSAGE_FIELDS: string[] = [
 const WorkOrderUrl = (workOrderId: number): string =>
   `${Config.odoo.url}/web#id=${workOrderId}&model=maintenance.request&view_type=form`
 
-export const getWorkOrderByResidenceId = async (
+export const getWorkOrdersByResidenceId = async (
   residenceId: string
 ): Promise<WorkOrder[]> => {
   try {

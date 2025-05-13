@@ -158,7 +158,7 @@ export const routes = (router: KoaRouter) => {
   router.get('(.*)/workOrders/residenceId/:residenceId', async (ctx) => {
     const metadata = generateRouteMetadata(ctx)
     try {
-      const workOrders = await odooAdapter.getWorkOrderByResidenceId(
+      const workOrders = await odooAdapter.getWorkOrdersByResidenceId(
         ctx.params.residenceId
       )
       ctx.status = 200

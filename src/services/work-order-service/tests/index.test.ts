@@ -35,7 +35,7 @@ describe('work-order-service index', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(odooAdapter, 'getWorkOrderByResidenceId')
+        .spyOn(odooAdapter, 'getWorkOrdersByResidenceId')
         .mockResolvedValue(workOrderMock)
     })
 
@@ -52,7 +52,7 @@ describe('work-order-service index', () => {
 
     it('should return 500 if there is an error', async () => {
       jest
-        .spyOn(odooAdapter, 'getWorkOrderByResidenceId')
+        .spyOn(odooAdapter, 'getWorkOrdersByResidenceId')
         .mockRejectedValue(new Error('Internal server error'))
 
       const res = await request(app.callback()).get(
