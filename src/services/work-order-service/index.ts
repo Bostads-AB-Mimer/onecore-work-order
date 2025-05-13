@@ -5,6 +5,7 @@ import {
   CreateWorkOrderBodySchema,
   GetWorkOrdersFromXpandQuerySchema,
   WorkOrder,
+  WorkOrderSchema,
   XpandWorkOrderSchema,
 } from './schemas'
 import * as xpandAdapter from './adapters/xpand-adapter'
@@ -26,7 +27,9 @@ import { registerSchema } from '../../middlewares/swagger-middleware'
  *   - bearerAuth: []
  */
 export const routes = (router: KoaRouter) => {
+  registerSchema('WorkOrder', WorkOrderSchema)
   registerSchema('XpandWorkOrder', XpandWorkOrderSchema)
+  registerSchema('CreateWorkOrderBody', CreateWorkOrderBodySchema)
 
   /**
    * @swagger
