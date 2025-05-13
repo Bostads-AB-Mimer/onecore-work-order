@@ -96,5 +96,5 @@ function xpandStatusToString(status: number) {
     return 'Avslutad'
   }
 
-  throw new Error(`Unknown status: ${status}`)
+  return `Unknown status: ${status}`
 }
