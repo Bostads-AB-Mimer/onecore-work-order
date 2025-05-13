@@ -67,6 +67,7 @@ export const XpandWorkOrderSchema = WorkOrderSchema.omit({
   DetailsCaption: true,
   ExternalResource: true,
   UseMasterKey: true,
+  HiddenFromMyPages: true,
 }).extend({
   Caption: z.string().nullable(),
   ContactCode: z.string().nullable(),
