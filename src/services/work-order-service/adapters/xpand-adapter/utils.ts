@@ -94,7 +94,7 @@ export function transformXpandDbWorkOrder(
       Registered: new Date(dbWorkOrder.createdAt),
       RentalObjectCode: dbWorkOrder.residenceId,
       Status: xpandStatusToString(dbWorkOrder.status),
-    } satisfies XpandWorkOrder
+    }
   } catch (error) {
     throw new Error(`Failed to transform work order from xpand: ${error}`)
   }
