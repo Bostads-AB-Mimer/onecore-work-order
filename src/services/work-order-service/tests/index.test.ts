@@ -71,13 +71,11 @@ describe('work-order-service index', () => {
       RentalObjectCode: residenceId,
     })
 
-    beforeEach(() => {
+    it('should return work orders for the given residence id', async () => {
       jest
         .spyOn(xpandAdapter, 'getWorkOrdersByResidenceId')
         .mockResolvedValue({ ok: true, data: xpandWorkOrdersMock })
-    })
 
-    it('should return work orders for the given residence id', async () => {
       const res = await request(app.callback()).get(
         `/workOrders/xpand/residenceId/${residenceId}`
       )
@@ -108,6 +106,55 @@ describe('work-order-service index', () => {
       expect(res.status).toBe(500)
       expect(res.body.error).toBe(
         'Failed to fetch work orders from Xpand: unknown'
+      )
+    })
+  })
+
+  describe('GET /workOrders/xpand/{code}', () => {
+    const workOrderCode = '25-000050'
+    const xpandWorkOrderDetailsMock = factory.xpandWorkOrderDetails.build({
+      Code: workOrderCode,
+    })
+
+    it('should return a work order', async () => {
+      jest
+        .spyOn(xpandAdapter, 'getWorkOrderDetails')
+        .mockResolvedValue({ ok: true, data: xpandWorkOrderDetailsMock })
+
+      const res = await request(app.callback()).get(
+        `/workOrders/xpand/${workOrderCode}`
+      )
+
+      expect(res.status).toBe(200)
+      expect(JSON.stringify(res.body.content)).toEqual(
+        JSON.stringify(xpandWorkOrderDetailsMock)
+      )
+    })
+
+    it('should return 404 if work order is not found', async () => {
+      jest
+        .spyOn(xpandAdapter, 'getWorkOrderDetails')
+        .mockResolvedValue({ ok: false, err: 'not-found' })
+
+      const res = await request(app.callback()).get(
+        `/workOrders/xpand/${workOrderCode}`
+      )
+
+      expect(res.status).toBe(404)
+    })
+
+    it('should return 500 if there is an error', async () => {
+      jest
+        .spyOn(xpandAdapter, 'getWorkOrderDetails')
+        .mockResolvedValue({ ok: false, err: 'unknown' })
+
+      const res = await request(app.callback()).get(
+        `/workOrders/xpand/${workOrderCode}`
+      )
+
+      expect(res.status).toBe(500)
+      expect(res.body.error).toBe(
+        'Failed to fetch work order from Xpand: unknown'
       )
     })
   })

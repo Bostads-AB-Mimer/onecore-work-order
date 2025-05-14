@@ -6,6 +6,8 @@ import {
   GetWorkOrdersFromXpandQuerySchema,
   WorkOrder,
   WorkOrderSchema,
+  XpandWorkOrderDetails,
+  XpandWorkOrderDetailsSchema,
   XpandWorkOrderSchema,
 } from './schemas'
 import * as xpandAdapter from './adapters/xpand-adapter'
@@ -29,6 +31,7 @@ import { registerSchema } from '../../middlewares/swagger-middleware'
 export const routes = (router: KoaRouter) => {
   registerSchema('WorkOrder', WorkOrderSchema)
   registerSchema('XpandWorkOrder', XpandWorkOrderSchema)
+  registerSchema('XpandWorkOrderDetails', XpandWorkOrderDetailsSchema)
   registerSchema('CreateWorkOrderBody', CreateWorkOrderBodySchema)
 
   /**
@@ -285,6 +288,93 @@ export const routes = (router: KoaRouter) => {
         content: {
           workOrders: xpandWorkOrders.data,
         },
+        ...metadata,
+      }
+    } catch (error: unknown) {
+      ctx.status = 500
+
+      if (error instanceof Error) {
+        ctx.body = {
+          error: error.message,
+          ...metadata,
+        }
+      }
+    }
+  })
+
+  /**
+   * @swagger
+   * /workOrders/xpand/{code}:
+   *   get:
+   *     summary: Get work order details by work order code from xpand
+   *     tags:
+   *       - Work Order Service
+   *     description: Retrieves work order details from xpand.
+   *     parameters:
+   *       - in: path
+   *         name: code
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The work order code to fetch details for.
+   *     responses:
+   *       '200':
+   *         description: Successfully retrieved work order.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 content:
+   *                   $ref: '#/components/schemas/XpandWorkOrderDetails'
+   *                 metadata:
+   *                   type: object
+   *                   description: Route metadata
+   *       '500':
+   *         description: Internal server error. Failed to retrieve work order.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 error:
+   *                   type: string
+   *                   example: Internal server error
+   *                 metadata:
+   *                   type: object
+   *                   description: Route metadata
+   *     security:
+   *       - bearerAuth: []
+   */
+  router.get('(.*)/workOrders/xpand/:code', async (ctx) => {
+    const metadata = generateRouteMetadata(ctx)
+
+    try {
+      const xpandWorkOrder = await xpandAdapter.getWorkOrderDetails(
+        ctx.params.code
+      )
+
+      if (!xpandWorkOrder.ok) {
+        if (xpandWorkOrder.err === 'not-found') {
+          ctx.status = 404
+          ctx.body = {
+            error: `Work order with code ${ctx.params.code} not found`,
+            ...metadata,
+          }
+          return
+        }
+
+        ctx.status = 500
+        ctx.body = {
+          error: `Failed to fetch work order from Xpand: ${xpandWorkOrder.err}`,
+          ...metadata,
+        }
+        return
+      }
+
+      ctx.status = 200
+      ctx.body = {
+        content: xpandWorkOrder.data satisfies XpandWorkOrderDetails,
         ...metadata,
       }
     } catch (error: unknown) {

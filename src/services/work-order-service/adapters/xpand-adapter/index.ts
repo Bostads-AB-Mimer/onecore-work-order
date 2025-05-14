@@ -2,10 +2,19 @@ import knex from 'knex'
 import { logger } from 'onecore-utilities'
 import Config from '../../../../common/config'
 import { AdapterResult } from '../../types'
-import { XpandWorkOrder, XpandWorkOrderSchema } from '../../schemas'
-import { transformXpandDbWorkOrder, trimStrings } from './utils'
+import {
+  XpandWorkOrder,
+  XpandWorkOrderDetails,
+  XpandWorkOrderDetailsSchema,
+  XpandWorkOrderSchema,
+} from '../../schemas'
+import {
+  transformXpandDbWorkOrder,
+  transformXpandDbWorkOrderDetails,
+  trimStrings,
+} from './utils'
 
-export type XpandDbWorkOrder = {
+export interface XpandDbWorkOrder {
   code: string
   caption: string | null
   contactCode: string | null
@@ -17,6 +26,9 @@ export type XpandDbWorkOrder = {
   lastChanged: Date
   priority: string | null
   residenceId: string
+}
+
+export interface XpandDbWorkOrderDetails extends XpandDbWorkOrder {
   rows: string // Fetched as JSON string
 }
 
@@ -33,6 +45,54 @@ export async function getWorkOrdersByResidenceId(
   logger.info(`Getting work orders for residenceId: ${residenceId}`)
 
   const workOrders = await db<XpandDbWorkOrder>('aoupp')
+    .select(
+      'aoupp.code',
+      'aoupp.caption AS caption',
+      'cmctc.cmctckod AS contactCode',
+      'aotlt.caption AS masterKey',
+      'aoupp.status AS status',
+      'resource.cmctcben AS resource',
+      'cmrgr.caption AS resourceGroup',
+      'aoupp.time AS createdAt',
+      'aoupp.lastchged AS lastChanged',
+      'aopri.code AS priority',
+      'babuf.hyresid AS residenceId'
+    )
+    .innerJoin('babuf', 'babuf.keycmobj', 'aoupp.keycmobj')
+    .innerJoin('aotlt', 'aotlt.keyaotlt', 'aoupp.keyaotlt')
+    .leftJoin('cmctc', 'cmctc.keycmctc', 'aoupp.keycmctc')
+    .leftJoin('cmctc as resource', 'cmctc.keycmctc', 'aoupp.keycmctc2')
+    .leftJoin('cmrgr', 'cmrgr.keycmrgr', 'aoupp.keycmrgr')
+    .leftJoin('aopri', 'aopri.keyaopri', 'aoupp.keyaopri')
+    .where('babuf.hyresid', residenceId)
+    .orderBy('aoupp.time', sortAscending ? 'asc' : 'desc')
+    .offset(skip)
+    .limit(limit)
+    .then<XpandDbWorkOrder[]>(trimStrings)
+
+  const transformedWorkOrders = workOrders.map(transformXpandDbWorkOrder)
+
+  const parsed = XpandWorkOrderSchema.array().safeParse(transformedWorkOrders)
+  if (!parsed.success) {
+    logger.error(
+      { error: parsed.error.format() },
+      'Failed to parse work orders from Xpand DB'
+    )
+
+    return { ok: false, err: 'schema-error' }
+  }
+
+  return { ok: true, data: parsed.data }
+}
+
+export async function getWorkOrderDetails(
+  workOrderCode: string
+): Promise<
+  AdapterResult<XpandWorkOrderDetails, 'not-found' | 'schema-error' | 'unknown'>
+> {
+  logger.info(`Getting details for work order code: ${workOrderCode}`)
+
+  const workOrder = await db<XpandDbWorkOrderDetails>('aoupp')
     .select(
       'aoupp.code',
       'aoupp.caption AS caption',
@@ -69,19 +129,21 @@ export async function getWorkOrdersByResidenceId(
     .leftJoin('cmctc as resource', 'cmctc.keycmctc', 'aoupp.keycmctc2')
     .leftJoin('cmrgr', 'cmrgr.keycmrgr', 'aoupp.keycmrgr')
     .leftJoin('aopri', 'aopri.keyaopri', 'aoupp.keyaopri')
-    .where('babuf.hyresid', residenceId)
-    .orderBy('aoupp.time', sortAscending ? 'asc' : 'desc')
-    .offset(skip)
-    .limit(limit)
-    .then<XpandDbWorkOrder[]>(trimStrings)
+    .where('aoupp.code', workOrderCode)
+    .first()
+    .then<XpandDbWorkOrderDetails>(trimStrings)
 
-  const transformedWorkOrders = workOrders.map(transformXpandDbWorkOrder)
+  if (!workOrder) {
+    return { ok: false, err: 'not-found' }
+  }
 
-  const parsed = XpandWorkOrderSchema.array().safeParse(transformedWorkOrders)
+  const transformedWorkOrder = transformXpandDbWorkOrderDetails(workOrder)
+
+  const parsed = XpandWorkOrderDetailsSchema.safeParse(transformedWorkOrder)
   if (!parsed.success) {
     logger.error(
       { error: parsed.error.format() },
-      'Failed to parse work orders from Xpand DB'
+      'Failed to parse work order from Xpand DB'
     )
 
     return { ok: false, err: 'schema-error' }

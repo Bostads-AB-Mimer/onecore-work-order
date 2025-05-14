@@ -63,7 +63,7 @@ export const OdooWorkOrderMessageSchema = z.object({
   create_date: z.coerce.string(),
 })
 
-export const XpandWorkOrderSchema = WorkOrderSchema.omit({
+export const XpandWorkOrderDetailsSchema = WorkOrderSchema.omit({
   DetailsCaption: true,
   ExternalResource: true,
   UseMasterKey: true,
@@ -74,6 +74,11 @@ export const XpandWorkOrderSchema = WorkOrderSchema.omit({
   Caption: z.string().nullable(),
   ContactCode: z.string().nullable(),
   Priority: z.string().nullable(),
+})
+
+export const XpandWorkOrderSchema = XpandWorkOrderDetailsSchema.omit({
+  Description: true,
+  WorkOrderRows: true,
 })
 
 export const MaintenanceUnitSchema = z.object({
@@ -189,6 +194,7 @@ export type WorkOrder = z.infer<typeof WorkOrderSchema>
 export type WorkOrderMessage = z.infer<typeof WorkOrderMessageSchema>
 export type OdooWorkOrder = z.infer<typeof OdooWorkOrderSchema>
 export type OdooWorkOrderMessage = z.infer<typeof OdooWorkOrderMessageSchema>
+export type XpandWorkOrderDetails = z.infer<typeof XpandWorkOrderDetailsSchema>
 export type XpandWorkOrder = z.infer<typeof XpandWorkOrderSchema>
 export type MaintenanceUnit = z.infer<typeof MaintenanceUnitSchema>
 export type RentalProperty = z.infer<typeof RentalPropertySchema>

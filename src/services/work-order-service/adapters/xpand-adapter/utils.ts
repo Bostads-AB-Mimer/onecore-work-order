@@ -1,6 +1,12 @@
 import z from 'zod'
-import { XpandWorkOrder } from '../../schemas'
-import { XpandDbWorkOrder } from '.'
+import {
+  XpandWorkOrder,
+  XpandWorkOrderDetails as XpandWorkOrderDetails,
+} from '../../schemas'
+import {
+  XpandDbWorkOrder,
+  XpandDbWorkOrderDetails as XpandDbWorkOrderDetails,
+} from '.'
 
 export function trimStrings<T>(data: T): T {
   if (typeof data === 'string') {
@@ -24,9 +30,9 @@ export function trimStrings<T>(data: T): T {
   return data
 }
 
-export function transformXpandDbWorkOrder(
-  dbWorkOrder: XpandDbWorkOrder
-): XpandWorkOrder {
+export function transformXpandDbWorkOrderDetails(
+  dbWorkOrderDetails: XpandDbWorkOrderDetails
+): XpandWorkOrderDetails {
   const rowSchema = z.object({
     caption: z.string(),
     locationCaption: z.string().optional(),
@@ -37,16 +43,16 @@ export function transformXpandDbWorkOrder(
 
   try {
     const rows = trimStrings(
-      dbWorkOrder.rows
-        ? rowSchema.array().parse(JSON.parse(dbWorkOrder.rows))
+      dbWorkOrderDetails.rows
+        ? rowSchema.array().parse(JSON.parse(dbWorkOrderDetails.rows))
         : []
     )
 
     return {
-      AccessCaption: dbWorkOrder.masterKey,
-      Caption: dbWorkOrder.caption,
-      Code: dbWorkOrder.code,
-      ContactCode: dbWorkOrder.contactCode,
+      AccessCaption: dbWorkOrderDetails.masterKey,
+      Caption: dbWorkOrderDetails.caption,
+      Code: dbWorkOrderDetails.code,
+      ContactCode: dbWorkOrderDetails.contactCode,
       Description: rows
         .map((row) =>
           row.locationCaption && row.equipmentCaption
@@ -54,12 +60,12 @@ export function transformXpandDbWorkOrder(
             : row.caption
         )
         .join('\n'),
-      Id: dbWorkOrder.code,
-      LastChanged: new Date(dbWorkOrder.lastChanged),
-      Priority: dbWorkOrder.priority,
-      Registered: new Date(dbWorkOrder.createdAt),
-      RentalObjectCode: dbWorkOrder.residenceId,
-      Status: xpandStatusToString(dbWorkOrder.status),
+      Id: dbWorkOrderDetails.code,
+      LastChanged: new Date(dbWorkOrderDetails.lastChanged),
+      Priority: dbWorkOrderDetails.priority,
+      Registered: new Date(dbWorkOrderDetails.createdAt),
+      RentalObjectCode: dbWorkOrderDetails.residenceId,
+      Status: xpandStatusToString(dbWorkOrderDetails.status),
       WorkOrderRows: rows.map((row) => ({
         Description: row.locationCaption
           ? `${row.locationCaption}: ${row.caption}`
@@ -67,6 +73,27 @@ export function transformXpandDbWorkOrder(
         LocationCode: row.locationCode ?? null,
         EquipmentCode: row.equipmentCode ?? null,
       })),
+    } satisfies XpandWorkOrderDetails
+  } catch (error) {
+    throw new Error(`Failed to transform work order from xpand: ${error}`)
+  }
+}
+
+export function transformXpandDbWorkOrder(
+  dbWorkOrder: XpandDbWorkOrder
+): XpandWorkOrder {
+  try {
+    return {
+      AccessCaption: dbWorkOrder.masterKey,
+      Caption: dbWorkOrder.caption,
+      Code: dbWorkOrder.code,
+      ContactCode: dbWorkOrder.contactCode,
+      Id: dbWorkOrder.code,
+      LastChanged: new Date(dbWorkOrder.lastChanged),
+      Priority: dbWorkOrder.priority,
+      Registered: new Date(dbWorkOrder.createdAt),
+      RentalObjectCode: dbWorkOrder.residenceId,
+      Status: xpandStatusToString(dbWorkOrder.status),
     } satisfies XpandWorkOrder
   } catch (error) {
     throw new Error(`Failed to transform work order from xpand: ${error}`)
