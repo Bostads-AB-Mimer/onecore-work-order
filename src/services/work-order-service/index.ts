@@ -3,7 +3,11 @@ import { generateRouteMetadata } from 'onecore-utilities'
 import * as odooAdapter from './adapters/odoo-adapter'
 import {
   CreateWorkOrderBodySchema,
+  CreateWorkOrderDetailsSchema,
   GetWorkOrdersFromXpandQuerySchema,
+  LeaseSchema,
+  RentalPropertySchema,
+  TenantSchema,
   WorkOrder,
   WorkOrderSchema,
   XpandWorkOrderDetails,
@@ -33,6 +37,10 @@ export const routes = (router: KoaRouter) => {
   registerSchema('XpandWorkOrder', XpandWorkOrderSchema)
   registerSchema('XpandWorkOrderDetails', XpandWorkOrderDetailsSchema)
   registerSchema('CreateWorkOrderBody', CreateWorkOrderBodySchema)
+  registerSchema('CreateWorkOrderDetails', CreateWorkOrderDetailsSchema)
+  registerSchema('Lease', LeaseSchema)
+  registerSchema('Tenant', TenantSchema)
+  registerSchema('RentalProperty', RentalPropertySchema)
 
   /**
    * @swagger
