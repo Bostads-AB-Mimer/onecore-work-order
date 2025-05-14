@@ -338,6 +338,16 @@ export const routes = (router: KoaRouter) => {
    *                 metadata:
    *                   type: object
    *                   description: Route metadata
+   *       '404':
+   *         description: Work order not found.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 error:
+   *                   type: string
+   *                   example: Work order not found
    *       '500':
    *         description: Internal server error. Failed to retrieve work order.
    *         content:
