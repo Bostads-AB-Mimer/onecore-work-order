@@ -20,6 +20,7 @@ export const WorkOrderSchema = z.object({
   LastChanged: z.coerce.date(),
   Priority: z.string(),
   Registered: z.coerce.date(),
+  DueDate: z.coerce.date().nullable(),
   RentalObjectCode: z.string(),
   Status: z.string(),
   UseMasterKey: z.boolean(),
@@ -50,6 +51,7 @@ export const OdooWorkOrderSchema = z.object({
   equipment_code: z.string(),
   rental_property_id: z.string(),
   create_date: z.coerce.string(),
+  due_date: z.coerce.string(),
   write_date: z.coerce.string(),
   stage_id: z.tuple([z.number(), z.string()]),
 })
@@ -70,6 +72,7 @@ export const XpandWorkOrderDetailsSchema = WorkOrderSchema.omit({
   HiddenFromMyPages: true,
   Messages: true,
   Url: true,
+  DueDate: true,
 }).extend({
   Caption: z.string().nullable(),
   ContactCode: z.string().nullable(),
