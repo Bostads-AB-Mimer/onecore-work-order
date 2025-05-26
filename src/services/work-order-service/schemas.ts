@@ -20,7 +20,7 @@ export const WorkOrderSchema = z.object({
   LastChanged: z.coerce.date(),
   Priority: z.string(),
   Registered: z.coerce.date(),
-  DueDate: z.coerce.date().nullable(),
+  DueDate: z.union([z.coerce.date(), z.null()]),
   RentalObjectCode: z.string(),
   Status: z.string(),
   UseMasterKey: z.boolean(),
@@ -72,7 +72,6 @@ export const XpandWorkOrderDetailsSchema = WorkOrderSchema.omit({
   HiddenFromMyPages: true,
   Messages: true,
   Url: true,
-  DueDate: true,
 }).extend({
   Caption: z.string().nullable(),
   ContactCode: z.string().nullable(),

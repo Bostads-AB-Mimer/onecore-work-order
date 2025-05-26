@@ -23,6 +23,7 @@ export interface XpandDbWorkOrder {
   resource: string
   resourceGroup: string
   createdAt: Date
+  expiresAt: Date | null
   lastChanged: Date
   priority: string | null
   residenceId: string
@@ -54,6 +55,7 @@ export async function getWorkOrdersByResidenceId(
       'resource.cmctcben AS resource',
       'cmrgr.caption AS resourceGroup',
       'aoupp.time AS createdAt',
+      'aoupp.timeforf AS expiresAt',
       'aoupp.lastchged AS lastChanged',
       'aopri.code AS priority',
       'babuf.hyresid AS residenceId'
@@ -102,6 +104,7 @@ export async function getWorkOrderDetails(
       'resource.cmctcben AS resource',
       'cmrgr.caption AS resourceGroup',
       'aoupp.time AS createdAt',
+      'aoupp.timeforf AS expiresAt',
       'aoupp.lastchged AS lastChanged',
       'aopri.code AS priority',
       'babuf.hyresid AS residenceId',
