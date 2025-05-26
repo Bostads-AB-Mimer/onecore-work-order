@@ -61,7 +61,7 @@ export async function getWorkOrdersByResidenceId(
     .innerJoin('babuf', 'babuf.keycmobj', 'aoupp.keycmobj')
     .innerJoin('aotlt', 'aotlt.keyaotlt', 'aoupp.keyaotlt')
     .leftJoin('cmctc', 'cmctc.keycmctc', 'aoupp.keycmctc')
-    .leftJoin('cmctc as resource', 'cmctc.keycmctc', 'aoupp.keycmctc2')
+    .leftJoin('cmctc as resource', 'resource.keycmctc', 'aoupp.keycmctc2')
     .leftJoin('cmrgr', 'cmrgr.keycmrgr', 'aoupp.keycmrgr')
     .leftJoin('aopri', 'aopri.keyaopri', 'aoupp.keyaopri')
     .where('babuf.hyresid', residenceId)
